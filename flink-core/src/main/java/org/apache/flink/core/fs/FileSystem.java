@@ -583,112 +583,104 @@ public abstract class FileSystem {
 		final long deadline = now + 30000;
 
 		Exception lastError = null;
-
-		do {
-			FileStatus status = null;
-			try {
-				status = getFileStatus(outPath);
-			}
-			catch (FileNotFoundException e) {
-				// okay, the file is not there
-			}
-
-			// check if path exists
-			if (status != null) {
-				// path exists, check write mode
-				switch (writeMode) {
-				case NO_OVERWRITE:
-					if (status.isDir() && createDirectory) {
-						return true;
-					} else {
-						// file may not be overwritten
-						throw new IOException("File or directory already exists. Existing files and directories are not overwritten in " +
-								WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.OVERWRITE.name() +
-								" mode to overwrite existing files and directories.");
-					}
-
-				case OVERWRITE:
-					if (status.isDir()) {
-						if (createDirectory) {
-							// directory exists and does not need to be created
-							return true;
-						} else {
-							// we will write in a single file, delete directory
-							// (there is also no other thread trying to delete the directory, since there is only one writer).
-							try {
-								this.delete(outPath, true);
-							}
-							catch (IOException e) {
-								// due to races in some file systems, it may spuriously occur that a deleted the file looks
-								// as if it still exists and is gone a millisecond later, once the change is committed
-								// we ignore the exception, possibly fall through the loop later
-								lastError = e;
-							}
-						}
-					}
-					else {
-						// delete file
-						try {
-							this.delete(outPath, false);
-						}
-						catch (IOException e) {
-							// Some other thread might already have deleted the file.
-							// If - for some other reason - the file could not be deleted,
-							// the error will be handled later.
-							lastError = e;
-						}
-					}
-					break;
-				default:
-					throw new IllegalArgumentException("Invalid write mode: " + writeMode);
-				}
-			}
-
-			if (createDirectory) {
-				// Output directory needs to be created
-
+		synchronized (SYNCHRONIZATION_OBJECT) {
+			do {
+				FileStatus status = null;
 				try {
-					if (!this.exists(outPath)) {
-						this.mkdirs(outPath);
-					}
-				}
-				catch (IOException e) {
-					// Some other thread might already have created the directory concurrently.
-					lastError = e;
+					status = getFileStatus(outPath);
+				} catch (FileNotFoundException e) {
+					// okay, the file is not there
 				}
 
-				// double check that the output directory exists
+				// check if path exists
+				if (status != null) {
+					// path exists, check write mode
+					switch (writeMode) {
+						case NO_OVERWRITE:
+							if (status.isDir() && createDirectory) {
+								return true;
+							} else {
+								// file may not be overwritten
+								throw new IOException("File or directory already exists. Existing files and directories are not overwritten in " +
+									WriteMode.NO_OVERWRITE.name() + " mode. Use " + WriteMode.OVERWRITE.name() +
+									" mode to overwrite existing files and directories.");
+							}
+
+						case OVERWRITE:
+							if (status.isDir()) {
+								if (createDirectory) {
+									// directory exists and does not need to be created
+									return true;
+								} else {
+									// we will write in a single file, delete directory
+									// (there is also no other thread trying to delete the directory, since there is only one writer).
+									try {
+										this.delete(outPath, true);
+									} catch (IOException e) {
+										// due to races in some file systems, it may spuriously occur that a deleted the file looks
+										// as if it still exists and is gone a millisecond later, once the change is committed
+										// we ignore the exception, possibly fall through the loop later
+										lastError = e;
+									}
+								}
+							} else {
+								// delete file
+								try {
+									this.delete(outPath, false);
+								} catch (IOException e) {
+									// Some other thread might already have deleted the file.
+									// If - for some other reason - the file could not be deleted,
+									// the error will be handled later.
+									lastError = e;
+								}
+							}
+							break;
+						default:
+							throw new IllegalArgumentException("Invalid write mode: " + writeMode);
+					}
+				}
+
+				if (createDirectory) {
+					// Output directory needs to be created
+
+					try {
+						if (!this.exists(outPath)) {
+							this.mkdirs(outPath);
+						}
+					} catch (IOException e) {
+						// Some other thread might already have created the directory concurrently.
+						lastError = e;
+					}
+
+					// double check that the output directory exists
+					try {
+						FileStatus check = getFileStatus(outPath);
+						if (check != null) {
+							if (check.isDir()) {
+								return true;
+							} else {
+								lastError = new IOException("FileSystem should create an output directory, but the path points to a file instead.");
+							}
+						}
+						// fall through the loop
+					} catch (FileNotFoundException e) {
+						// fall though the loop
+					}
+
+				} else {
+					// check that the output path does not exist and an output file can be created by the output format.
+					return !this.exists(outPath);
+				}
+
+				// small delay to allow changes to make progress
 				try {
-					FileStatus check = getFileStatus(outPath);
-					if (check != null) {
-						if (check.isDir()) {
-							return true;
-						}
-						else {
-							lastError = new IOException("FileSystem should create an output directory, but the path points to a file instead.");
-						}
-					}
-					// fall through the loop
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					throw new IOException("Thread was interrupted");
 				}
-				catch (FileNotFoundException e) {
-					// fall though the loop
-				}
-
 			}
-			else {
-				// check that the output path does not exist and an output file can be created by the output format.
-				return !this.exists(outPath);
-			}
-
-			// small delay to allow changes to make progress
-			try {
-				Thread.sleep(10);
-			}
-			catch (InterruptedException e) {
-				throw new IOException("Thread was interrupted");
-			}
+			while (System.currentTimeMillis() < deadline);
 		}
-		while (System.currentTimeMillis() < deadline);
 
 		if (lastError != null) {
 			throw new IOException("File system failed to prepare output path " + outPath + " with write mode " + writeMode.name(), lastError);
