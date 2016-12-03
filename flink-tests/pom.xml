@@ -209,6 +209,35 @@ under the License.
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<append>true</append>
+					<classDumpDir>${project.build.directory}/classes/</classDumpDir>
+					<includes>
+						<include>org/apache/flink/**</include>
+					</includes>
+					<excludes>
+						<exclude>org/apache/flink/test/**</exclude>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>post-unit-test</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		
 			<!-- Scala Compiler -->
 			<plugin>
@@ -316,7 +345,7 @@ under the License.
 					<configLocation>${project.basedir}/../tools/maven/scalastyle-config.xml</configLocation>
 				</configuration>
 			</plugin>
-		
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -328,7 +357,7 @@ under the License.
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -339,6 +368,9 @@ under the License.
 					<excludes>
 						<exclude>**/*TestBase*.class</exclude>
 					</excludes>
+					<includes>
+						<include>**/*CountMapreduce*.*</include>
+					</includes>
 					<classpathDependencyExcludes>
 						<classpathDependencyExclude>org.apache.curator:curator-recipes</classpathDependencyExclude>
 						<classpathDependencyExclude>org.apache.curator:curator-client</classpathDependencyExclude>
