@@ -110,6 +110,7 @@ under the License.
 		<mockito.version>1.10.19</mockito.version>
 		<powermock.version>1.6.5</powermock.version>
 		<jacoco.version>0.7.7.201606060606</jacoco.version>
+		<shade.shadedArtifactAttached>false</shade.shadedArtifactAttached>
 		<!--
 			Keeping the MiniKDC version fixed instead of taking hadoop version dependency
 			to support testing Kafka, ZK etc., modules that does not have Hadoop dependency
@@ -747,8 +748,8 @@ under the License.
 		<profile>
 			<id>coverage</id>
 			<properties>
-				<jacoco.exec>${project.basedir}/target/jacoco.exec</jacoco.exec>
-				<jacoco.report.path>${project.basedir}/target/jacoco-report/</jacoco.report.path>
+				<flink.forkCount>1</flink.forkCount>
+				<shade.shadedArtifactAttached>true</shade.shadedArtifactAttached>
 			</properties>
 			<build>
 				<plugins>
@@ -757,8 +758,13 @@ under the License.
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<version>${jacoco.version}</version>
 						<configuration>
-							<destFile>${jacoco.exec}</destFile>
-							<append>false</append>
+							<append>true</append>
+							<includes>
+								<include>org/apache/flink/**</include>
+							</includes>
+							<excludes>
+								<exclude>org/apache/flink/test/**</exclude>
+							</excludes>
 						</configuration>
 						<executions>
 							<execution>
@@ -769,14 +775,10 @@ under the License.
 							</execution>
 							<execution>
 								<id>post-unit-test</id>
-								<phase>test</phase>
+								<phase>verify</phase>
 								<goals>
 									<goal>report</goal>
 								</goals>
-								<configuration>
-									<dataFile>${jacoco.exec}</dataFile>
-									<outputDirectory>${jacoco.report.path}</outputDirectory>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
@@ -1051,7 +1053,7 @@ under the License.
 						</goals>
 						<configuration>
 							<shadeTestJar>true</shadeTestJar>
-							<shadedArtifactAttached>false</shadedArtifactAttached>
+							<shadedArtifactAttached>${shade.shadedArtifactAttached}</shadedArtifactAttached>
 							<createDependencyReducedPom>true</createDependencyReducedPom>
 							<dependencyReducedPomLocation>${project.basedir}/target/dependency-reduced-pom.xml</dependencyReducedPomLocation>
 							<filters>
