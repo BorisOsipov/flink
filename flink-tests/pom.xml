@@ -605,4 +605,27 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<systemPropertyVariables>
+								<log.level>WARN</log.level>
+							</systemPropertyVariables>
+							<excludes>
+								<exclude>**/*TestBase*.class</exclude>
+							</excludes>
+							<reuseForks>false</reuseForks>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
