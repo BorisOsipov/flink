@@ -620,10 +620,38 @@ under the License.
 							</systemPropertyVariables>
 							<excludes>
 								<exclude>**/*TestBase*.class</exclude>
-								<exclude>**/**.class</exclude>
 							</excludes>
 							<reuseForks>false</reuseForks>
 						</configuration>
+						<executions>
+							<execution>
+								<id>default-test</id>
+								<phase>test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>integration-tests</id>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+								<configuration>
+									<includes>
+										<include>**/*ITCase.*</include>
+									</includes>
+									<excludes>
+										<exclude>**/ZooKeeperLeaderElectionITCase.java</exclude>
+										<exclude>**/ClassLoaderITCase.java</exclude>
+										<exclude>**/JobManagerHACheckpointRecoveryITCase.java</exclude>
+										<exclude>**/JobManagerHAJobGraphRecoveryITCase.java</exclude>
+										<exclude>**/JobManagerHAProcessFailureBatchRecoveryITCase.java</exclude>
+									</excludes>
+									<reuseForks>false</reuseForks>
+								</configuration>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>
