@@ -626,6 +626,13 @@ under the License.
 					</plugin>
 				</plugins>
 			</build>
+			<dependencies>
+				<dependency>
+					<groupId>org.apache.curator</groupId>
+					<artifactId>curator-recipes</artifactId>
+					<version>${curator.version}</version>
+				</dependency>
+			</dependencies>
 		</profile>
 	</profiles>
 </project>
