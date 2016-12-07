@@ -620,8 +620,8 @@ under the License.
 							</systemPropertyVariables>
 							<excludes>
 								<exclude>**/*TestBase*.class</exclude>
-								<exclude>**/*ZooKeeperLeaderElectionITCase.class</exclude>
-								<exclude>**/*ClassLoaderITCase.class</exclude>
+								<exclude>**/ZooKeeperLeaderElectionITCase.class</exclude>
+								<exclude>**/ClassLoaderITCase.class</exclude>
 							</excludes>
 							<reuseForks>false</reuseForks>
 						</configuration>
