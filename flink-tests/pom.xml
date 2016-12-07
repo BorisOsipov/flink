@@ -620,11 +620,7 @@ under the License.
 							</systemPropertyVariables>
 							<excludes>
 								<exclude>**/*TestBase*.class</exclude>
-								<exclude>**/ZooKeeperLeaderElectionITCase.java</exclude>
-								<exclude>**/ClassLoaderITCase.java</exclude>
-								<exclude>**/JobManagerHACheckpointRecoveryITCase.java</exclude>
-								<exclude>**/JobManagerHAJobGraphRecoveryITCase.java</exclude>
-								<exclude>**/JobManagerHAProcessFailureBatchRecoveryITCase.java</exclude>
+								<exclude>**/**.class</exclude>
 							</excludes>
 							<reuseForks>false</reuseForks>
 						</configuration>
