@@ -51,7 +51,7 @@ MVN_PID="${ARTIFACTS_DIR}/watchdog.mvn.pid"
 MVN_EXIT="${ARTIFACTS_DIR}/watchdog.mvn.exit"
 MVN_OUT="${ARTIFACTS_DIR}/mvn.out"
 # Suppress maven transfer messages
-MAVEN_OPTIONS="MAVEN_OPTS=\"-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn\""
+export MAVEN_OPTS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
 TRACE_OUT="${ARTIFACTS_DIR}/jps-traces.out"
 
@@ -200,9 +200,6 @@ echo "STARTED watchdog (${WD_PID})."
 cd $HERE/../
 
 echo "RUNNING '${MVN}'."
-
-#Apply maven options
-export ${MAVEN_OPTIONS}
 
 # Run $MVN and pipe output to $MVN_OUT for the watchdog. The PID is written to $MVN_PID to
 # allow the watchdog to kill $MVN if it is not producing any output anymore. $MVN_EXIT contains
